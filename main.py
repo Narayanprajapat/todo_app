@@ -1,8 +1,13 @@
-from app import create_app
+from flask import Flask
+from flask_cors import CORS
+from app.routes import blueprints
 
-app = create_app()
-
+app = Flask(__name__, template_folder="template")
 app.config['CORS-HEADERS'] = 'Content-Type'
+CORS(app)
+for route_blueprint in blueprints:
+    app.register_blueprint(route_blueprint, url_prefix='/api/v1')
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
