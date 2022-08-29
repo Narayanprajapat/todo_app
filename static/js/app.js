@@ -8,7 +8,6 @@ const deleteAllBtn = document.querySelector('.footer button');
 inputBox.onkeyup = () => {
 	let userEnteredValue = inputBox.value; //getting user entered value
 	if (userEnteredValue.trim() != 0) {
-		//if the user value isn't only spaces
 		addBtn.classList.add('active'); //active the add button
 	} else {
 		addBtn.classList.remove('active'); //unactive the add button
@@ -17,84 +16,137 @@ inputBox.onkeyup = () => {
 
 showTasks(); //calling showTask function
 
+
 addBtn.onclick = () => {
-	//when user click on plus icon button
-	let userEnteredValue = inputBox.value; //getting input field value
-	let getLocalStorageData = localStorage.getItem('New Todo'); //getting localstorage
-	if (getLocalStorageData == null) {
-		//if localstorage has no data
-		listArray = []; //create a blank array
-	} else {
-		listArray = JSON.parse(getLocalStorageData); //transforming json string into a js object
+	let todoValue = inputBox.value; //getting input field value
+	const body = {
+	    "text": todoValue
 	}
-	listArray.push(userEnteredValue); //pushing or adding new value in array
-	localStorage.setItem('New Todo', JSON.stringify(listArray)); //transforming js object into a json string
-	showTasks(); //calling showTask function
-	addBtn.classList.remove('active'); //unactive the add button once the task added
+	var xhttp = new XMLHttpRequest();
+    xhttp.open('POST','/api/v1/create',true);
+    xhttp.setRequestHeader('Content-Type', 'application/json');
+    xhttp.send(JSON.stringify(body));
+    xhttp.onload = function(){
+        if(xhttp.readyState === xhttp.DONE){
+            var resp = JSON.parse(this.responseText);
+            if(xhttp.status == 201){
+                console.log(resp);
+                showTasks(); //calling showTask function
+	            addBtn.classList.remove('active'); //unactive the add button once the task added
+            }else if(xhttp.status == 400){
+                console.log(resp)
+            }
+        }
+    }
 };
 
 function showTasks() {
-	let getLocalStorageData = localStorage.getItem('New Todo');
-	if (getLocalStorageData == null) {
-		listArray = [];
-	} else {
-		listArray = JSON.parse(getLocalStorageData);
-	}
-	const pendingTasksNumb = document.querySelector('.pendingTasks');
-	pendingTasksNumb.textContent = listArray.length; //passing the array length in pendingtask
-	if (listArray.length > 0) {
-		//if array length is greater than 0
-		deleteAllBtn.classList.add('active'); //active the delete button
-	} else {
-		deleteAllBtn.classList.remove('active'); //unactive the delete button
-	}
-	let newLiTag = '';
-	listArray.forEach((element, index) => {
-		newLiTag += `<li>${element}<span class="icon" onclick="deleteTask(${index})"><i class="fas fa-trash"></i></span></li>`;
-	});
-	todoList.innerHTML = newLiTag; //adding new li tag inside ul tag
-	inputBox.value = ''; //once task added leave the input field blank
+	var xhttp = new XMLHttpRequest();
+    xhttp.open('POST','/api/v1/get_todo',true);
+    xhttp.send();
+    xhttp.onload = function(){
+        if(xhttp.readyState === xhttp.DONE){
+            if(xhttp.status == 200){
+                var resp = JSON.parse(this.responseText);
+                console.log(resp)
+                const listArray = resp['data'];
+                const pendingTasksNumb = document.querySelector('.pendingTasks');
+                pendingTasksNumb.textContent = listArray.length; //passing the array length in pendingtask
+                if (listArray.length > 0) {
+                    deleteAllBtn.classList.add('active'); //active the delete button
+                } else {
+                    deleteAllBtn.classList.remove('active'); //unactive the delete button
+                }
+                let newLiTag = '';
+                listArray.forEach((element, index) => {
+                    let todo_id = element['todo_id']
+                    newLiTag += `
+                    <li id=show_${todo_id}>
+                        ${element['text']}
+                        <span class="deleteIcon" onclick="deleteTask('${todo_id}')">
+                            <i class="fas fa-trash"></i>
+                        </span>
+                        <span class="updateIcon" onclick="updateTask('${todo_id}')">
+                            <i class="fas fa-pen"></i>
+                        </span>
+                    </li>
+                    <li class="hide" id=hide_${todo_id}>
+                        <div class="updateInputField">
+                            <input type="text" placeholder="Add your new todo" value=${element['text']} id=value_${todo_id} />
+                            <button onclick="update('${todo_id}')" id=><i class="fas fa-plus"></i></button>
+                        </div>
+                    </li>`;
+                });
+                todoList.innerHTML = newLiTag; //adding new li tag inside ul tag
+                inputBox.value = ''; //once task added leave the input field blank
+            }else if(xhttp.status == 400){
+                    console.log(resp)
+                }
+            }
+        }
 }
 
 // delete task function
-function deleteTask(index) {
-	let getLocalStorageData = localStorage.getItem('New Todo');
-	listArray = JSON.parse(getLocalStorageData);
-	listArray.splice(index, 1); //delete or remove the li
-	localStorage.setItem('New Todo', JSON.stringify(listArray));
-	showTasks(); //call the showTasks function
+function deleteTask(todo_id) {
+    const body = {
+        "todo_id": todo_id
+    }
+	var xhttp = new XMLHttpRequest();
+    xhttp.open('POST','/api/v1/delete',true);
+    xhttp.setRequestHeader('Content-Type', 'application/json');
+    xhttp.send(JSON.stringify(body));
+    xhttp.onload = function(){
+        if(xhttp.readyState === xhttp.DONE){
+            if(xhttp.status == 201){
+                var resp = JSON.parse(this.responseText);
+                console.log(resp)
+	            showTasks(); //call the showTasks function
+            }
+        }
+    }
 }
 
 // delete all tasks function
 deleteAllBtn.onclick = () => {
-	listArray = []; //empty the array
-	localStorage.setItem('New Todo', JSON.stringify(listArray)); //set the item in localstorage
-	showTasks(); //call the showTasks function
+	var xhttp = new XMLHttpRequest();
+    xhttp.open('POST','/api/v1/delete-all',true);
+    xhttp.setRequestHeader('Content-Type', 'application/json');
+    xhttp.send();
+    xhttp.onload = function(){
+        if(xhttp.readyState === xhttp.DONE){
+            if(xhttp.status == 201){
+                var resp = JSON.parse(this.responseText);
+                console.log(resp)
+	            showTasks(); //call the showTasks function
+            }
+        }
+    }
 };
 
 
-//var xhttp = new XMLHttpRequest();
-//    xhttp.open('POST','/x_perience_setup_brand_solution',true);
-//    xhttp.send(form);
-//    xhttp.onprogress = function(){
-//        bs_progress_btn.classList.add('d-none')
-//        bs_connect_btn.classList.remove('d-none')
-//    }
-//    xhttp.onload = function(){
-//        if(xhttp.readyState === xhttp.DONE){
-//            if(xhttp.status == 200){
-//                var resp = JSON.parse(this.responseText);
-//                console.log(resp);
-//                window.location.reload();
-//            }else if(xhttp.status == 400){
-//                var label_selection = document.getElementById('label_selection');
-//                label_selection.classList.remove('position')
-//                label_selection.classList.remove('d-none');
-//                label_selection.innerHTML = 'Already Uploaded Brand Solution Data'
-//                label_selection.style.backgroundColor = '#ffc107'
-//                setTimeout(function(){
-//                    label_selection.classList.add('d-none');
-//                },3000)
-//            }
-//        }
-//    }
+function updateTask(todo_id){
+    document.getElementById(("show_"+todo_id)).classList.add('hide')
+    document.getElementById(("hide_"+todo_id)).classList.remove('hide')
+}
+
+function update(todo_id){
+    const updateInputId = "value_"+todo_id
+    const value = document.getElementById(("value_"+todo_id)).value
+    const body = {
+        "todo_id": todo_id,
+        "text": value
+    }
+	var xhttp = new XMLHttpRequest();
+    xhttp.open('POST','/api/v1/update',true);
+    xhttp.setRequestHeader('Content-Type', 'application/json');
+    xhttp.send(JSON.stringify(body));
+    xhttp.onload = function(){
+        if(xhttp.readyState === xhttp.DONE){
+            if(xhttp.status == 201){
+                var resp = JSON.parse(this.responseText);
+                console.log(resp)
+	            showTasks(); //call the showTasks function
+            }
+        }
+    }
+}

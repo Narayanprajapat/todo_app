@@ -1,11 +1,24 @@
 import datetime
 from bson import ObjectId
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from app.helpers.response_maker import response_maker
 from app.models.todo import Todo
 
 
 todo_api = Blueprint("todo_api", __name__, template_folder="template")
+
+
+@todo_api.route('/get_todo', methods=["POST"])
+def get_todo():
+    try:
+        result = list()
+        for todo in Todo.objects:
+            result.append({"text": todo.text, "todo_id": str(todo._id)})
+        print(result)
+        return response_maker({"message": "Todo created successfully", "data": result}, 200)
+    except Exception as e:
+        print(e)
+        return response_maker({"message": "Internal server error"}, 500)
 
 
 @todo_api.route('/create', methods=["POST"])
