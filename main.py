@@ -1,16 +1,13 @@
-# This is a sample Python script.
+from flask import Flask
+from flask_cors import CORS
+from app.routes import blueprints
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+app = Flask(__name__, template_folder="template")
+app.config['CORS-HEADERS'] = 'Content-Type'
+CORS(app)
+for route_blueprint in blueprints:
+    app.register_blueprint(route_blueprint, url_prefix='/api/v1')
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    app.run(debug=True, host='0.0.0.0', port=5000)
