@@ -71,3 +71,30 @@ deleteAllBtn.onclick = () => {
 	localStorage.setItem('New Todo', JSON.stringify(listArray)); //set the item in localstorage
 	showTasks(); //call the showTasks function
 };
+
+
+//var xhttp = new XMLHttpRequest();
+//    xhttp.open('POST','/x_perience_setup_brand_solution',true);
+//    xhttp.send(form);
+//    xhttp.onprogress = function(){
+//        bs_progress_btn.classList.add('d-none')
+//        bs_connect_btn.classList.remove('d-none')
+//    }
+//    xhttp.onload = function(){
+//        if(xhttp.readyState === xhttp.DONE){
+//            if(xhttp.status == 200){
+//                var resp = JSON.parse(this.responseText);
+//                console.log(resp);
+//                window.location.reload();
+//            }else if(xhttp.status == 400){
+//                var label_selection = document.getElementById('label_selection');
+//                label_selection.classList.remove('position')
+//                label_selection.classList.remove('d-none');
+//                label_selection.innerHTML = 'Already Uploaded Brand Solution Data'
+//                label_selection.style.backgroundColor = '#ffc107'
+//                setTimeout(function(){
+//                    label_selection.classList.add('d-none');
+//                },3000)
+//            }
+//        }
+//    }
